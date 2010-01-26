@@ -2,8 +2,9 @@
 # coding: UTF-8
 import sys
 import re
+import os.path
 
-s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_response, s_example = range(9)
+s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_params2, s_response, s_example = range(10)
 state = s_intv
 
 urlrx = re.compile("^URL.*:$")
@@ -66,16 +67,25 @@ for line in open(sys.argv[1], 'r'):
             limit = current
             state = s_intv
     elif state == s_params:
-        if current.startswith("* "):
+        if current.startswith("* "):# or current.startswith("+ "):
             m = param_ext_rx.match(current)
             if m and not (' ' in m.group(1)) and not ('[' in m.group(1)):
-                #m2 = param_opt.match(current)
-                #if m2:
-                #    params.append((m.group(1),m2.group(3)))
-                #else:
                 params.append(m.group(1))
+        elif current == "":
+            state = s_params2
         elif resprx.match(line):
-            state == s_response
+            state = s_response
+    elif state == s_params2:
+        if current == "":
+            state = s_intv
+        else:
+            state = s_params
+            if current.startswith("* "):# or current.startswith("+ "):
+                m = param_ext_rx.match(current)
+                if m and not (' ' in m.group(1)) and not ('[' in m.group(1)):
+                    params.append(m.group(1))
+            elif resprx.match(line):
+                state = s_response
     elif state == s_response:
         state = s_intv
     elif state == s_example:
@@ -104,7 +114,7 @@ else:
 
 name = name.title()
 name = name.replace(" ","")
-
+oldname = name
 plural = re.compile("(.*)s$")
 if (url.endswith("/id.format") or ("POST" in http or "DELETE" in http)) and name.endswith("s"):
     name = name[0:len(name)-1]
@@ -112,21 +122,24 @@ if (url.endswith("/id.format") or ("POST" in http or "DELETE" in http)) and name
         name = name = name[0:len(name)-1]
 print name
 
+if os.path.exists("apis/"+name):
+    name = oldname
+
 f = open("apis/"+name, 'w')
-first = "int QwTwitter::"+name+"("
-cppparams = []
-for key in params:
-    cppparams.append("const QString& "+key)
-    rx = re.compile"(/|\.)("+key+")(/|\.)"
-    m = rx.match(url)
-    if m:
+#first = "int QwTwitter::"+name+"("
+#cppparams = []
+#for key in params:
+#    cppparams.append("const QString& "+key)
+#    rx = re.compile"(/|\.)("+key+")(/|\.)"
+#    m = rx.match(url)
+#    if m:
         
-first = first + ', '.join(cppparams) + "){\n"
-#f.write("URL:{0}\n".format(url))
-#f.write("Format:{0}\n".format(fmt))
-#f.write("HTTP Method:{0}\n".format(http))
-#f.write("API rate limit:{0}\n".format(limit))
-#f.write("Auth required:{0}\n".format(auth))
-#f.write("Params:{0}\n".format(','.join(params)))
+#first = first + ', '.join(cppparams) + "){\n"
+f.write("URL:{0}\n".format(url))
+f.write("Format:{0}\n".format(fmt))
+f.write("HTTP Method:{0}\n".format(http))
+f.write("API rate limit:{0}\n".format(limit))
+f.write("Auth required:{0}\n".format(auth))
+f.write("Params:{0}\n".format(','.join(params)))
 f.close()
 
