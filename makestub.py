@@ -3,8 +3,27 @@
 import sys
 import re
 import os.path
+import string
 
-s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_params2, s_response, s_example = range(10)
+type_dic = {'id': 'quint64', 
+            'since_id': 'quint64', 
+            'max_id': 'quint64', 
+            'user_id': 'quint64', 
+            'in_reply_to_status_id': 'quint64',
+            'list_id': 'quint64',
+            'count': 'int',
+            'page': 'int',
+            'cursor': 'qint64',
+            'user': 'QString',
+            'screen_name': 'QString', 
+            'name': 'QString',
+            'source_id': 'quint64', 
+            'source_screen_name': 'QString', 
+            'target_id': 'quint64', 
+            'target_screen_name': 'QString'
+            }
+
+s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_params2, s_response, s_xml, s_example = range(11)
 state = s_intv
 
 urlrx = re.compile("^URL.*:$")
@@ -14,6 +33,8 @@ rarx = re.compile("^Requires Authentication.*:$")
 limitrx = re.compile("^API rate limited.*:$")
 paramrx = re.compile("^Parameter.*:$")
 resprx = re.compile("^Response.*:$")
+xmlrx = re.compile("^XML example.*:$")
+tagrx = re.compile("<([a-zA-Z][a-zA-Z0-9_\-]*)\s*.*>")
 exrx = re.compile("^Usage examples.*:$")
 httprx = re.compile("http://.*")
 httpmethodrx = re.compile("(GET|POST|DELETE|CREATE)")
@@ -25,6 +46,9 @@ fmt = ""
 http = ""
 limit = ""
 auth = ""
+xml = ""
+rootelm = ""
+flag = False
 params = []
 
 for line in open(sys.argv[1], 'r'):
@@ -87,9 +111,34 @@ for line in open(sys.argv[1], 'r'):
             elif resprx.match(line):
                 state = s_response
     elif state == s_response:
-        state = s_intv
-    elif state == s_example:
-        state = s_intv
+        if xmlrx.match(current):
+            state = s_xml
+    elif state == s_xml:
+        #hogerx = re.compile("Twitter REST API Method:")
+        #if exrx.match(current) or hogerx.match(current):
+        #     state = s_intv
+        #else:
+        #     if current != "":
+        if current != "":
+            current = string.replace(current, '& ', '&amp; ')
+            xml = xml + current
+            if not flag:
+                m = tagrx.match(current)
+                if m:
+                    rootelm = m.group(1)
+                    #print "hogehoge:</"+rootelm+">"
+                    if current.endswith("</"+rootelm+">"):
+                        state = s_intv
+                    else:
+                        flag = True
+            else:
+                #print current
+                if current == "</"+rootelm+">":
+                    #print "finished"
+                    state = s_intv
+                    flag = False
+                elif state == s_example:
+                    state = s_intv
 
 file_rx = re.compile(".*%3A-(.*)$")
 print sys.argv[2]
@@ -122,19 +171,27 @@ if (url.endswith("/id.format") or ("POST" in http or "DELETE" in http)) and name
         name = name = name[0:len(name)-1]
 print name
 
-if os.path.exists("apis/"+name):
+if os.path.exists("apis/"+name+".api"):
     name = oldname
 
-f = open("apis/"+name, 'w')
-#first = "int QwTwitter::"+name+"("
-#cppparams = []
-#for key in params:
-#    cppparams.append("const QString& "+key)
-#    rx = re.compile"(/|\.)("+key+")(/|\.)"
-#    m = rx.match(url)
-#    if m:
+f = open("apis/"+name+".api", 'w')
+first = "int QwTwitter::"+name+"("
+cppparams = []
+for key in params:
+    if type_dic.has_key(key):
+        if type_dic[key] == 'QString':
+            cppparams.append("const QString& "+key)
+        else:
+            cppparams.append(type_dic[key] + " " + key)
+    else:
+        cppparams.append("const QString& "+key)
+first = first + ', '.join(cppparams) + '){\nreturn 0;\n}\n\n'
+    #rx = re.compile"(/|\.)("+key+")(/|\.)"
+    #m = rx.match(url)
+    #if m:
         
 #first = first + ', '.join(cppparams) + "){\n"
+f.write(first)
 f.write("URL:{0}\n".format(url))
 f.write("Format:{0}\n".format(fmt))
 f.write("HTTP Method:{0}\n".format(http))
@@ -143,3 +200,7 @@ f.write("Auth required:{0}\n".format(auth))
 f.write("Params:{0}\n".format(','.join(params)))
 f.close()
 
+if xml != "":
+    xmlf = open("apis/"+name+".xml", 'w')
+    xmlf.write(xml)
+    xmlf.close()
