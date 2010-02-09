@@ -121,7 +121,7 @@ for line in open(sys.argv[1], 'r'):
         #     if current != "":
         if current != "":
             current = string.replace(current, '& ', '&amp; ')
-            xml = xml + current
+            xml = xml + current + "\n"
             if not flag:
                 m = tagrx.match(current)
                 if m:
