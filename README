@@ -1,0 +1,21 @@
+このスクリプト群は、Twitter API Wikiからデータを取得し、
+アドホックに解析して、さまざまな言語用のTwitterライブラリを作ることを支援するものです。
+なにぶん雑に作ったので、予期せぬ不具合・取りこぼしが発生することがあります。
+また、Wikiの記述自体が間違っていることもあります（例えば、statuses/showのXML example）。
+いちいち構ってられないのでその際は手動で直して騙し騙し使ってください。
+OAuthのあたりは解析不能なので飛ばしてます。
+以下各スクリプトの説明：
+* main.sh
+  http://apiwiki.twitter.com/Twitter-API-Documentationから各APIの説明があるURLのリストを生成する。restapi.listとsearchapi.listがそれ。
+
+* proc_list.sh
+  URIリストを読み込み、各行をfetch_item.shに渡す。
+
+* fetch_item.sh
+  APIの説明があるURIからデータを取得し、makestub.pyに渡す。
+
+* makestub.py
+  取得したデータを解析し、APIの定義とレスポンスのサンプルXMLをapis/に書き出す。
+
+* schema.py
+  apis/*.xml から、Twitterの返してくるXMLデータのスキーマを推測し、output/schema.xmlに書き出す。スキーマはオレオレ言語になってます。Twitterのレスポンス中の要素は再帰的にはならない(HTMLで例えると<div>のなかに<div>が出るような構造にはなっていない)はずなので、これで十分のはず。
