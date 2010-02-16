@@ -6,10 +6,14 @@ from xml.dom import minidom, Node
 dirList=os.listdir("./apis/")
 dic = {}
 roots = {}
+leaf_types="./resource/leaf_types"
+leaf_dic = {}
 
 def scanNode(node, level = 0):
     if node.nodeType == Node.ELEMENT_NODE:
         parent = node.parentNode
+        if not leaf_dic.has_key(node.tagName):
+            dic[node.tagName]={}
         if parent and parent.nodeType == Node.ELEMENT_NODE:
             if dic.has_key(parent.tagName):
                 if not dic[parent.tagName].has_key(node.tagName):
@@ -31,11 +35,20 @@ def scanNode(node, level = 0):
         for child in node.childNodes:
             scanNode(child, level+1)
 
+f = open(leaf_types, 'r')
+for line in f:
+    line=line.strip()
+    x = line.split("\t")
+    leaf_dic[x[0]]=x[1]
+f.close()
+
 for fname in dirList:
     if fname.endswith(".xml"):
         print fname
         doc = minidom.parse("./apis/"+fname)
         scanNode(doc)
+
+
                 
 #print dic
 #print roots
