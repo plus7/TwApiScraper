@@ -55,14 +55,17 @@ for fname in dirList:
 #exit()
 print "<schema xmlns:georss=\"http://hoge/\">"
 for elm in dic:
-    if roots.has_key(elm):
-        print "<" + elm + " root=\"true\">"
+    if len(dic[elm]) == 0:
+        print "<"+elm+" leaf=\"true\"/>"
     else:
-        print "<" + elm + ">"
-    for child in dic[elm]:
-        if dic[elm][child].has_key("plural") and dic[elm][child]["plural"]:
-            print "  <"+child+" plural=\"true\"/>"
+        if roots.has_key(elm):
+            print "<" + elm + " root=\"true\">"
         else:
-            print "  <"+child+"/>"
-    print "</" + elm + ">"
+            print "<" + elm + ">"
+        for child in dic[elm]:
+            if dic[elm][child].has_key("plural") and dic[elm][child]["plural"]:
+                print "  <"+child+" plural=\"true\"/>"
+            else:
+                print "  <"+child+"/>"
+        print "</" + elm + ">"
 print "</schema>"
