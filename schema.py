@@ -12,7 +12,7 @@ leaf_dic = {}
 def scanNode(node, level = 0):
     if node.nodeType == Node.ELEMENT_NODE:
         parent = node.parentNode
-        if not leaf_dic.has_key(node.tagName):
+        if not leaf_dic.has_key(node.tagName) and not dic.has_key(node.tagName):
             dic[node.tagName]={}
         if parent and parent.nodeType == Node.ELEMENT_NODE:
             if dic.has_key(parent.tagName):
@@ -44,7 +44,7 @@ f.close()
 
 for fname in dirList:
     if fname.endswith(".xml"):
-        print fname
+        #print fname
         doc = minidom.parse("./apis/"+fname)
         scanNode(doc)
 
