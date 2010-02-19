@@ -29,7 +29,8 @@ def scanNode(node, level = 0):
         #if prevElm:
             #print "  " + prevElm.tagName
         if node.data.find("truncated") > -1 or node.data.find("...") > -1:
-            #print "***truncated***"
+            print "***truncated***"
+            print node.data
             dic[parent.tagName][prevElm.tagName]["plural"] = True
     if node.hasChildNodes:
         for child in node.childNodes:
@@ -44,7 +45,7 @@ f.close()
 
 for fname in dirList:
     if fname.endswith(".xml"):
-        #print fname
+        print fname
         doc = minidom.parse("./apis/"+fname)
         scanNode(doc)
 

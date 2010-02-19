@@ -2,22 +2,41 @@
 #include <QtXml>
 
 QUrl getUrlValue(QDomElement& elm){
-  
+  return QUrl(getStrValue(elm));
 }
 
 bool getBoolValue(QDomElement& elm){
+  if(getStrValue(elm)=="true"){
+    return true;
+  }else{
+    return false;
+  }
 }
 
 quint64 getUInt64Value(QDomElement& elm){
+  QString str = getStrValue(elm);
+  bool ok;
+  quint64 dec = str.toULongLong(&ok, 10);
+  if(ok)
+    return dec;
+  else
+    return 0;
 }
 
 QString getStrValue(QDomElement& elm){
+  QDomNode child = elm.firstChild();
+  if(child.isNull())
+    return "";
+  else
+    return child.nodeValue();
 }
 
 QDateTime getDateTimeValue(QDomElement& elm){
+  return QDateTime::fromString(getStrValue(elm));
 }
 
 Color getColorValue(QDomElement& elm){
+  return Color(getStrValue(elm));
 }
 
 class sender_t {
