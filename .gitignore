@@ -1,1 +1,5 @@
 *~
+*.o
+Makefile
+*.user
+moc_*.cpp
