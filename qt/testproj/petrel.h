@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtNetwork>
+#include "../petrel_types.h"
 
 enum ATTR_TYPE {
     ATTR_ROLE
@@ -21,9 +22,11 @@ public:
     virtual ~Petrel();
     void homeTimeline();
     void issueGetRequest(QNetworkRequest& req);
-
-//signals:
-    //void homeTimelineReceived(home_timeline_t& home_timeline);
+    void issuePostRequest(QNetworkRequest& req, QByteArray& data, bool multipart);
+    void issuePutRequest(QNetworkRequest& req, QByteArray& data);
+    void issueDeleteRequest(QNetworkRequest& req);
+signals:
+    void homeTimelineReceived(statuses_t& home_timeline);
 
 public slots:
     void replyFinished( QNetworkReply* );
