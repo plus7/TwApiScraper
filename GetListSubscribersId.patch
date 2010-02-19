@@ -1,0 +1,13 @@
+*** GetListSubscribersId.api	2010-02-19 14:36:54.000000000 +0900
+--- GetListSubscribersId_correct.api	2010-02-19 15:17:09.000000000 +0900
+***************
+*** 1,4 ****
+! URL:http://api.twitter.com/1/user/list_id/subscribers/:id.format
+  Format:xml, json
+  Method:GET
+  Limit:true
+--- 1,4 ----
+! URL:http://api.twitter.com/1/user/list_id/subscribers/id.format
+  Format:xml, json
+  Method:GET
+  Limit:true

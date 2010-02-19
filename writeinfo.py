@@ -113,6 +113,8 @@ for line in open(sys.argv[1], 'r'):
     elif state == s_response:
         if xmlrx.match(current):
             state = s_xml
+    elif state == s_example:
+        state = s_intv
     elif state == s_xml:
         #hogerx = re.compile("Twitter REST API Method:")
         #if exrx.match(current) or hogerx.match(current):
@@ -175,29 +177,30 @@ if os.path.exists("apis/"+name+".api"):
     name = oldname
 
 f = open("apis/"+name+".api", 'w')
-first = "int QwTwitter::"+name+"("
-cppparams = []
-for key in params:
-    if type_dic.has_key(key):
-        if type_dic[key] == 'QString':
-            cppparams.append("const QString& "+key)
-        else:
-            cppparams.append(type_dic[key] + " " + key)
-    else:
-        cppparams.append("const QString& "+key)
-first = first + ', '.join(cppparams) + '){\nreturn 0;\n}\n\n'
+#first = "int QwTwitter::"+name+"("
+#cppparams = []
+#for key in params:
+#    if type_dic.has_key(key):
+#        if type_dic[key] == 'QString':
+#            cppparams.append("const QString& "+key)
+#        else:
+#            cppparams.append(type_dic[key] + " " + key)
+#    else:
+#        cppparams.append("const QString& "+key)
+#first = first + ', '.join(cppparams) + '){\nreturn 0;\n}\n\n'
     #rx = re.compile"(/|\.)("+key+")(/|\.)"
     #m = rx.match(url)
     #if m:
         
 #first = first + ', '.join(cppparams) + "){\n"
-f.write(first)
+#f.write(first)
 f.write("URL:{0}\n".format(url))
 f.write("Format:{0}\n".format(fmt))
-f.write("HTTP Method:{0}\n".format(http))
-f.write("API rate limit:{0}\n".format(limit))
-f.write("Auth required:{0}\n".format(auth))
+f.write("Method:{0}\n".format(http))
+f.write("Limit:{0}\n".format(limit))
+f.write("AuthRequired:{0}\n".format(auth))
 f.write("Params:{0}\n".format(','.join(params)))
+f.write("XMLRoot:{0}\n".format(rootelm))
 f.close()
 
 if xml != "":

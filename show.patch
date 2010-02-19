@@ -1,0 +1,19 @@
+*** Show.xml	2010-02-19 14:36:01.000000000 +0900
+--- Show_correct.xml	2010-02-19 15:14:54.000000000 +0900
+***************
+*** 36,42 ****
+  <notifications>false</notifications>
+  <following>false</following>
+  <verified>true</verified>
+! <contributors_enabled>false</verified>
+  </user>
+  <geo/>
+  <contributors/>
+--- 36,42 ----
+  <notifications>false</notifications>
+  <following>false</following>
+  <verified>true</verified>
+! <contributors_enabled>false</contributors_enabled>
+  </user>
+  <geo/>
+  <contributors/>
