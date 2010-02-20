@@ -11,21 +11,36 @@ code_dic = {}
 ctor_dic = {}
 child_dic = {}
 root_dic = {}
+fwd_types = []
 util_def = """
-QUrl getUrlValue(QDomElement& elm);
-bool getBoolValue(QDomElement& elm);
-quint64 getUInt64Value(QDomElement& elm);
-QString getStrValue(QDomElement& elm);
-QDateTime getDateTimeValue(QDomElement& elm);
-Color getColorValue(QDomElement& elm);
+class Color{
+public:
+  Color(const QString& str){
+    bool ok;
+    int hex = str.toInt(&ok, 16);
+    m_color.setRgb((hex >> 16)&0xFF, (hex >> 8)&0xFF, hex & 0xFF);
+  }
+  Color(){}
+  QString toString(){return "";}
+  QColor getColor(){return m_color;}
+private:
+  QColor m_color;
+};
+QUrl getUrlValue(QDomElement elm);
+bool getBoolValue(QDomElement elm);
+int getIntValue(QDomElement elm);
+quint64 getUInt64Value(QDomElement elm);
+QString getStrValue(QDomElement elm);
+QDateTime getDateTimeValue(QDomElement elm);
+Color getColorValue(QDomElement elm);
 """
 
 util_impl = """
-QUrl getUrlValue(QDomElement& elm){
+QUrl getUrlValue(QDomElement elm){
   return QUrl(getStrValue(elm));
 }
 
-bool getBoolValue(QDomElement& elm){
+bool getBoolValue(QDomElement elm){
   if(getStrValue(elm)=="true"){
     return true;
   }else{
@@ -33,7 +48,17 @@ bool getBoolValue(QDomElement& elm){
   }
 }
 
-quint64 getUInt64Value(QDomElement& elm){
+int getIntValue(QDomElement elm){
+  QString str = getStrValue(elm);
+  bool ok;
+  quint64 dec = str.toInt(&ok, 10);
+  if(ok)
+    return dec;
+  else
+    return 0;
+}
+
+quint64 getUInt64Value(QDomElement elm){
   QString str = getStrValue(elm);
   bool ok;
   quint64 dec = str.toULongLong(&ok, 10);
@@ -43,7 +68,7 @@ quint64 getUInt64Value(QDomElement& elm){
     return 0;
 }
 
-QString getStrValue(QDomElement& elm){
+QString getStrValue(QDomElement elm){
   QDomNode child = elm.firstChild();
   if(child.isNull())
     return "";
@@ -51,11 +76,38 @@ QString getStrValue(QDomElement& elm){
     return child.nodeValue();
 }
 
-QDateTime getDateTimeValue(QDomElement& elm){
-  return QDateTime::fromString(getStrValue(elm));
+int getMonthByEngStr(const QString& str){
+    if(str == "Jan") return 1;
+    else if(str == "Feb") return 2;
+    else if(str == "Mar") return 3;
+    else if(str == "Apr") return 4;
+    else if(str == "May") return 5;
+    else if(str == "Jun") return 6;
+    else if(str == "Jul") return 7;
+    else if(str == "Aug") return 8;
+    else if(str == "Sep") return 9;
+    else if(str == "Qct") return 10;
+    else if(str == "Nov") return 11;
+    else if(str == "Jan") return 12;
+    else return -1;
 }
 
-Color getColorValue(QDomElement& elm){
+QDateTime getDateTimeValue(QDomElement elm){
+    QRegExp rx("(...) (...) (\\\\d\\\\d) (\\\\d\\\\d:\\\\d\\\\d:\\\\d\\\\d) (\\\\+\\\\d\\\\d\\\\d\\\\d) (\\\\d\\\\d\\\\d\\\\d)");
+    int pos = 0;
+    QString str = getStrValue(elm);
+    if((pos = rx.indexIn(str, pos)) != -1){
+      QString hoge = QString("%1 %2 %3 %4").arg(getMonthByEngStr(rx.cap(2))).arg(rx.cap(3), rx.cap(4), rx.cap(6));
+      QDateTime dt = QDateTime::fromString(hoge, "M dd hh:mm:ss yyyy");
+      qDebug() << QDate::shortMonthName(2);
+      qDebug() << dt.isValid();
+      qDebug() << dt.toString();
+      return dt;
+    }
+    return QDateTime();
+}
+
+Color getColorValue(QDomElement elm){
   return Color(getStrValue(elm));
 }
 """
@@ -63,7 +115,8 @@ Color getColorValue(QDomElement& elm){
 def fixIdentifier(name):
     name = re.sub("-", "_", name)
     name = re.sub(":", "_", name)
-    return name
+    hoge = re.sub("^protected$", "protected_", name)
+    return hoge
 
 def getCtorCodePlural(tagName,first):
     fixedName = fixIdentifier(tagName)
@@ -120,12 +173,13 @@ def getCtorCode(tagName,first):
 def processElm(elm):
     tmp = ""
     fixedClass = fixIdentifier(elm.tagName)
-    tmp = tmp + "class "+fixedClass+"_t {\n"
-    ctor_code = fixedClass + "_t::" + fixedClass+"_t(QDomElement& element){\n"
+    fwd_types.append(fixedClass+"_t")
+    tmp = tmp + "class "+fixedClass+"_t {\npublic:\n"
+    ctor_code = fixedClass + "_t::" + fixedClass+"_t(QDomElement element){\n"
     ctor_code = ctor_code + "  QDomElement child = element.firstChildElement();\n"
     ctor_code = ctor_code + "  QString tagName;\n"
     ctor_code = ctor_code + "  for (; !child.isNull(); child = child.nextSiblingElement()) {\n"
-    ctor_code = ctor_code + "    tagName = child.tagName()\n"
+    ctor_code = ctor_code + "    tagName = child.tagName();\n"
     members = ""
     if not child_dic.has_key(elm.tagName):
         child_dic[elm.tagName] = []
@@ -153,7 +207,7 @@ def processElm(elm):
                     members = members + "  QSharedPointer<"+fixedName+"_t> "+fixedName+";\n"
             first = False
     ctor_code = ctor_code + "\n  }\n}\n"
-    tmp = tmp + "  " + elm.tagName+"_t(QDomElement& element);\n"
+    tmp = tmp + "  " + fixedClass+"_t(QDomElement element);\n"
     tmp = tmp + members + "};\n"
     code_dic[elm.tagName]=tmp
     ctor_dic[elm.tagName]=ctor_code
@@ -179,8 +233,10 @@ for root in doc.childNodes:
 
 f = open("petrel_types.h", 'w')
 impl = open("petrel_impl.cpp", 'w')
-f.write("#include <QtCore>\n#include <QtXml>\n")
+f.write("#include <QtCore>\n#include <QtXml>\n#include <QColor>\n#include <QRegExp>\n")
 f.write(util_def)
+for l in fwd_types:
+    f.write("class "+l+";\n")
 impl.write("#include <QtCore>\n#include <QtXml>\n#include \"petrel_types.h\"\n\n")
 impl.write(util_impl)
 for codekey in child_dic:#
@@ -189,14 +245,16 @@ for codekey in child_dic:#
         impl.write(ctor_dic[codekey])
         del code_dic[codekey]
 print "//----------"
+print code_dic
 for codekey in code_dic:
     if not root_dic[codekey]:
         f.write(code_dic[codekey])
         impl.write(ctor_dic[codekey])
 
 print "//----------"
+print root_dic
 for codekey in root_dic:
-    if code_dic.has_key(codekey):
+    if code_dic.has_key(codekey) and root_dic[codekey]:
         f.write(code_dic[codekey])
         impl.write(ctor_dic[codekey])
         

@@ -4,7 +4,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    Petrel petrel("plus7","ylxzfuhdT");
+    Petrel petrel("xxxxxxxx","xxxxxxxx");
     petrel.homeTimeline();
     return a.exec();
 }
