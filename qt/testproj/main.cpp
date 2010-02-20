@@ -3,8 +3,8 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
-    Petrel petrel("xxxxxxxx","xxxxxxxx");
+    if(argc<3) return -1;
+    Petrel petrel(argv[1],argv[2]);
     petrel.homeTimeline();
     return a.exec();
 }
