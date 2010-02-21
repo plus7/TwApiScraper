@@ -33,6 +33,22 @@ quint64 getUInt64Value(QDomElement elm);
 QString getStrValue(QDomElement elm);
 QDateTime getDateTimeValue(QDomElement elm);
 Color getColorValue(QDomElement elm);
+class friends_t;
+class friends_t{
+public:
+    bool value;
+    friends_t(QDomElement element){
+        value = getBoolValue(element);
+    }
+};
+class ok_t;
+class ok_t{
+public:
+    bool value;
+    ok_t(QDomElement element){
+        value = getBoolValue(element);
+    }
+};
 """
 
 util_impl = """
@@ -99,9 +115,9 @@ QDateTime getDateTimeValue(QDomElement elm){
     if((pos = rx.indexIn(str, pos)) != -1){
       QString hoge = QString("%1 %2 %3 %4").arg(getMonthByEngStr(rx.cap(2))).arg(rx.cap(3), rx.cap(4), rx.cap(6));
       QDateTime dt = QDateTime::fromString(hoge, "M dd hh:mm:ss yyyy");
-      qDebug() << QDate::shortMonthName(2);
-      qDebug() << dt.isValid();
-      qDebug() << dt.toString();
+      //qDebug() << QDate::shortMonthName(2);
+      //qDebug() << dt.isValid();
+      //qDebug() << dt.toString();
       return dt;
     }
     return QDateTime();
@@ -233,7 +249,7 @@ for root in doc.childNodes:
 
 f = open("petrel_types.h", 'w')
 impl = open("petrel_impl.cpp", 'w')
-f.write("#include <QtCore>\n#include <QtXml>\n#include <QColor>\n#include <QRegExp>\n")
+f.write("#ifndef PETREL_TYPES_H\n#define PETREL_TYPES_H\n#include <QtCore>\n#include <QtXml>\n#include <QColor>\n#include <QRegExp>\n")
 f.write(util_def)
 for l in fwd_types:
     f.write("class "+l+";\n")
@@ -258,5 +274,8 @@ for codekey in root_dic:
         f.write(code_dic[codekey])
         impl.write(ctor_dic[codekey])
         
+f.write("#endif\n")
 f.close()
+impl.close()
+
 

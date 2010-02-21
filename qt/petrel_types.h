@@ -1,3 +1,5 @@
+#ifndef PETREL_TYPES_H
+#define PETREL_TYPES_H
 #include <QtCore>
 #include <QtXml>
 #include <QColor>
@@ -23,6 +25,22 @@ quint64 getUInt64Value(QDomElement elm);
 QString getStrValue(QDomElement elm);
 QDateTime getDateTimeValue(QDomElement elm);
 Color getColorValue(QDomElement elm);
+class friends_t;
+class friends_t{
+public:
+    bool value;
+    friends_t(QDomElement element){
+        value = getBoolValue(element);
+    }
+};
+class ok_t;
+class ok_t{
+public:
+    bool value;
+    ok_t(QDomElement element){
+        value = getBoolValue(element);
+    }
+};
 class locations_t;
 class ids_t;
 class id_list_t;
@@ -301,3 +319,4 @@ public:
   QString slug;
   QString name;
 };
+#endif

@@ -1,0 +1,19 @@
+*** GetListMembers.xml	2010-02-20 16:19:54.000000000 +0900
+--- GetListMembers_correct.xml	2010-02-20 16:22:26.000000000 +0900
+***************
+*** 151,157 ****
+  <status>
+  <created_at>Wed Nov 04 17:27:52 +0000 2009</created_at>
+  <id>5425363300</id>
+! <text>RT @rsarver: great twitter viz apps (@mashable post from June) - [18]http://bit.ly/Cq14r. "Just Landed" is my favorite #appwednesday @blprnt ...</text>
+  <source>web</source>
+  <truncated>true</truncated>
+  <in_reply_to_status_id></in_reply_to_status_id>
+--- 151,157 ----
+  <status>
+  <created_at>Wed Nov 04 17:27:52 +0000 2009</created_at>
+  <id>5425363300</id>
+! <text>RT @rsarver: great twitter viz apps (@mashable post from June) - [18]http://bit.ly/Cq14r. "Just Landed" is my favorite #appwednesday @blprnt </text>
+  <source>web</source>
+  <truncated>true</truncated>
+  <in_reply_to_status_id></in_reply_to_status_id>

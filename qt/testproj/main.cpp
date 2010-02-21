@@ -1,10 +1,9 @@
 #include <QtCore/QCoreApplication>
+#include "testapp.h"
 #include "petrel.h"
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
-    if(argc<3) return -1;
-    Petrel petrel(argv[1],argv[2]);
-    petrel.homeTimeline();
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+    TestApp a(argc, argv);
     return a.exec();
 }

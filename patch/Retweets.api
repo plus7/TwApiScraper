@@ -1,0 +1,8 @@
+URL:http://api.twitter.com/1/statuses/retweets/id.format
+Format:xml, json
+Method:GET
+Limit:1 call per request
+AuthRequired:true
+Params:id,count
+XMLRoot:statuses
+Pagination:False

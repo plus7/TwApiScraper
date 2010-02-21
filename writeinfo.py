@@ -23,8 +23,9 @@ type_dic = {'id': 'quint64',
             'target_screen_name': 'QString'
             }
 
-s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_params2, s_response, s_xml, s_example = range(11)
+s_intv, s_url, s_format, s_httpmethod, s_reqauth, s_apilimit, s_params, s_params2, s_response, s_unpage_resp, s_xml, s_example = range(12)
 state = s_intv
+
 
 urlrx = re.compile("^URL.*:$")
 fmtrx = re.compile("^Format.*:$")
@@ -33,6 +34,7 @@ rarx = re.compile("^Requires Authentication.*:$")
 limitrx = re.compile("^API rate limited.*:$")
 paramrx = re.compile("^Parameter.*:$")
 resprx = re.compile("^Response.*:$")
+unpage_resprx = re.compile("^Unpaginated Response.*:$")
 xmlrx = re.compile("^XML example.*:$")
 tagrx = re.compile("<([a-zA-Z][a-zA-Z0-9_\-]*)\s*.*>")
 exrx = re.compile("^Usage examples.*:$")
@@ -41,6 +43,7 @@ httpmethodrx = re.compile("(GET|POST|DELETE|CREATE)")
 param_ext_rx = re.compile("\* (.*?)(:|\.)")
 param_opt = re.compile("\* (.*?)(:|\.) (Optional|Required)")
 
+is_list=False
 url = ""
 fmt = ""
 http = ""
@@ -49,7 +52,9 @@ auth = ""
 xml = ""
 rootelm = ""
 flag = False
+flag2 = False
 params = []
+pagination = False
 
 for line in open(sys.argv[1], 'r'):
     current = line.strip()
@@ -68,6 +73,9 @@ for line in open(sys.argv[1], 'r'):
             state = s_params
         elif resprx.match(current):
             state = s_response
+        elif unpage_resprx.match(current):
+            pagination = True
+            state = s_unpage_resp
         elif exrx.match(current):
             state = s_example
     elif state == s_url:
@@ -92,13 +100,16 @@ for line in open(sys.argv[1], 'r'):
             state = s_intv
     elif state == s_params:
         if current.startswith("* "):# or current.startswith("+ "):
+            flag2 = True
             m = param_ext_rx.match(current)
             if m and not (' ' in m.group(1)) and not ('[' in m.group(1)):
                 params.append(m.group(1))
-        elif current == "":
+        elif current == "" and flag2:
             state = s_params2
         elif resprx.match(line):
             state = s_response
+        elif unpage_resprx.match(line):
+            state = s_unpage_resp
     elif state == s_params2:
         if current == "":
             state = s_intv
@@ -110,7 +121,12 @@ for line in open(sys.argv[1], 'r'):
                     params.append(m.group(1))
             elif resprx.match(line):
                 state = s_response
+            elif unpage_resprx.match(line):
+                state = s_unpage_resp
     elif state == s_response:
+        if xmlrx.match(current):
+            state = s_xml
+    elif state == s_unpage_resp:
         if xmlrx.match(current):
             state = s_xml
     elif state == s_example:
@@ -155,6 +171,7 @@ name = ''
 if filename.startswith("GET") or filename.startswith("POST") or filename.startswith("DELETE"):
     name = filename.replace('-',' ')
     name = name.title()
+    is_list = True
 else:
     if hoge[0] == "account" or hoge[0] == "statuses":
         name = hoge[1]
@@ -177,6 +194,13 @@ if os.path.exists("apis/"+name+".api"):
     name = oldname
 
 f = open("apis/"+name+".api", 'w')
+
+if is_list:
+    if not "list_id" in params:
+        params.append("list_id")
+    if not "id" in params:
+        params.append("id")
+
 #first = "int QwTwitter::"+name+"("
 #cppparams = []
 #for key in params:
@@ -201,6 +225,7 @@ f.write("Limit:{0}\n".format(limit))
 f.write("AuthRequired:{0}\n".format(auth))
 f.write("Params:{0}\n".format(','.join(params)))
 f.write("XMLRoot:{0}\n".format(rootelm))
+f.write("Pagination:{0}\n".format(pagination))
 f.close()
 
 if xml != "":

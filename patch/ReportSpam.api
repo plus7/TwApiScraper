@@ -1,0 +1,8 @@
+URL:http://api.twitter.com/1/report_spam.format
+Format:xml, json
+Method:POST
+Limit:A user is allotted a fixed number of spam reports an hour.
+AuthRequired:true
+Params:id,user_id,screen_name
+XMLRoot:user
+Pagination:False
